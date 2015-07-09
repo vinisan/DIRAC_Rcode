@@ -329,9 +329,9 @@ doPermutations<-function(expr.data, pathway.list, nCond1, nCond2,  PathwayAccura
     
     #Storing the values in a data matrix
     results<-cbind(names(pathway.list), PathwayAccuracy)
-    results<-cbind(results, Pvalue )
-    results<-cbind(results, q)
-    results<-cbind(results, CVaccuracy)
+    results<-cbind(results, as.numeric(Pvalue))
+    results<-cbind(results, as.numeric(q))
+    results<-cbind(results, as.numeric(CVaccuracy))
     
     return(results)
 }
@@ -385,7 +385,8 @@ set.seed(2334)
 permutations = 1
 cores= 16
 
-TKegg9<-doPermutations(Tdirac.data, Tpathway.list, nCond1, nCond2,  TPathwayAccuracy, Tcalculated.Accuracy, TCVaccuracy, permutations, cores)
+storeResultsT<-doPermutations(Tdirac.data, Tpathway.list, nCond1, nCond2,  TPathwayAccuracy, Tcalculated.Accuracy, TCVaccuracy, permutations, cores)
+hist(storeResultsP[,4], breaks = 10)
 
 #Proteomic DIRAC analysis
 PindexDir<-read.csv("AHumanProteeome.csv", nrow = 1, header = FALSE, row.names = 1)
@@ -420,6 +421,7 @@ PCVaccuracy<-doCrossValidation(Pdata.Cond1, Pdata.Cond2,Ppathway.list)
 #Permutations
 Pcalculated.Accuracy<-vector('numeric',length(Ppathway.list))
 set.seed(2334)
-PKegg9<-doPermutations(Pdirac.data, Ppathway.list, nCond1, nCond2,  PPathwayAccuracy, Pcalculated.Accuracy, PCVaccuracy, permutations, cores)
+storeResultsP<-doPermutations(Pdirac.data, Ppathway.list, nCond1, nCond2,  PPathwayAccuracy, Pcalculated.Accuracy, PCVaccuracy, permutations, cores)
+hist(storeResultsP[,4], breaks = 10)
 
 
