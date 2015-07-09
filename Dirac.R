@@ -386,7 +386,7 @@ permutations = 1
 cores= 16
 
 storeResultsT<-doPermutations(Tdirac.data, Tpathway.list, nCond1, nCond2,  TPathwayAccuracy, Tcalculated.Accuracy, TCVaccuracy, permutations, cores)
-hist(storeResultsP[,4], breaks = 10)
+hist(storeResultsT[,4], breaks = 10)
 
 #Proteomic DIRAC analysis
 PindexDir<-read.csv("AHumanProteeome.csv", nrow = 1, header = FALSE, row.names = 1)
