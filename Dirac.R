@@ -19,9 +19,10 @@ readPathway<-function(path.File, exp.data){
             return.pathways <-append(return.pathways, list(path[[i]]))
         }
     }
+    
     names(return.pathways)<-sapply(return.pathways,'[',1)
     final.pathways = lapply(return.pathways,'[',-(1:2))
-        return(final.pathways)
+    return(final.pathways)
 }
 
 
@@ -34,37 +35,33 @@ readPathway<-function(path.File, exp.data){
 doPairWise<-function(pathwayOrderMatrix, gene.pairs){
     
     pathCond.cols<-nrow(pathwayOrderMatrix)
-    
     class.Matrix<-matrix(, nrow = gene.pairs)
-    
    
     for ( sample.Count in 1:ncol(pathwayOrderMatrix)){
         sample<-vector('numeric', gene.pairs)
         pathCond<-as.matrix(pathwayOrderMatrix[,sample.Count])
         sample<-rankVector(pathCond, pathCond.cols, gene.pairs)
-        
         class.Matrix<-cbind(class.Matrix,sample)
     }
     
-        class.Matrix<-class.Matrix[,-1]
-   
+    class.Matrix<-class.Matrix[,-1]
     mode.Vector<-vector('numeric',nrow(class.Matrix))
     nSamples <- ncol(class.Matrix)
-        for ( gene.path in 1:nrow(class.Matrix) ){
-        mode.gene = 0
         
+    for ( gene.path in 1:nrow(class.Matrix) ){
+        mode.gene = 0
         mode.gene = sum(class.Matrix[gene.path,])/nSamples
         
-
         if(mode.gene < 0.5){
             mode.Vector[gene.path] = 0
         }
+        
         else{
             mode.Vector[gene.path] = 1
         }
         
     }
-        return(list(class.Matrix, mode.Vector))
+    return(list(class.Matrix, mode.Vector))
 }
 
 
@@ -81,14 +78,12 @@ rankVector<-function(pathCond, pathCond.cols, gene.pairs){
                 counter= counter+1
                 
                 if(pathCond[i,1] >= pathCond[j,1]){
-                    
-                    rank.compared[counter] = 1
+                   rank.compared[counter] = 1
                     
                 }
                 
                 else{
                     rank.compared[counter] = 0
-                    
                 }
                 
             }
@@ -102,12 +97,13 @@ rankVector<-function(pathCond, pathCond.cols, gene.pairs){
 #this function generates the rank conservation score by comparing the expression matrix (ranked) with the template for that class.
 
 calcRankMatching<-function(expr.Matrix,template){
+    
     pairs<-nrow(expr.Matrix)
     rank.conservation<-vector("numeric", ncol(expr.Matrix))
+    
     for ( columns in 1:ncol(expr.Matrix)){
         
         different<-which(expr.Matrix[,columns] != template)
-        
         percentage.different = 1-(length(different)/pairs)
         rank.conservation[columns] = percentage.different
         
@@ -119,22 +115,18 @@ calcRankMatching<-function(expr.Matrix,template){
 #Calculate the average accuracy using rank.difference matrix returns the average accuracy of the pathway as a classifier: James says "if i calculate accuracy (eta) as the average of sensitivity and specificity; sensitivity is TP / N1 and specificity is TN / N2. when i sum up TP and TN, i count 0.5 for ties" Average  = (TP/N1)*0.5 + (TN/N2)*0.5
 
 calculateAccuracy<-function(rank.difference,nCond1,nCond2){
+    
     true.positives = 0
     ties = 0
     specificity = 0
     sensitivity = 0
     accuracy = 0
     true.positives <- length(which(rank.difference[1:nCond1] >= 0))
-    
     sensitivity = (true.positives)/nCond1
     true.negatives = 0
-   
-    
     true.negatives <- length(which(rank.difference[(nCond1 +1):(nCond1 + nCond2)] < 0))
     ties = length(which(rank.difference[(nCond1 +1):(nCond1 + nCond2)] == 0))
-    
     specificity = (true.negatives )/nCond2
-    
     accuracy = (specificity * 0.5) + (sensitivity * 0.5)
     
     return(accuracy)
@@ -162,8 +154,7 @@ runDirac<-function(data.Cond1, data.Cond2, pathway.List, pathway.accuracy){
         
         pathCond.cols<-nrow(pathwayNDataCond1.order)
         gene.pairs <-(pathCond.cols*(pathCond.cols-1))/2
-        
-        
+            
         cond1.matrix<-matrix(, nrow = gene.pairs)
         cond2.matrix<-matrix(, nrow = gene.pairs)
         
@@ -171,12 +162,9 @@ runDirac<-function(data.Cond1, data.Cond2, pathway.List, pathway.accuracy){
         cond2.list<-doPairWise(pathwayNDataCond2.order,gene.pairs)
         
         total.Matrix<-cbind(cond1.list[[1]],cond2.list[[1]])
-    
-        
         rank.matching1<-calcRankMatching(total.Matrix,cond1.list[[2]])
         rank.matching2<-calcRankMatching(total.Matrix,cond2.list[[2]])
         rank.difference = rank.matching1 - rank.matching2
-        
         
         nCond1 = ncol(data.Cond1)
         nCond2 = ncol(data.Cond2)
@@ -200,17 +188,13 @@ permuteDirac<-function(dirac.data,pathway.List, nCond1, nCond2, pathway.Differen
         data.Cond1<-permuted.Data[,1:nCond1]
         data.Cond2<-permuted.Data[,(nCond1 +1):(nCond1 + nCond2)]
         
-        
         pathway.Accuracy<-vector('numeric',length(pathway.List))
-        
         permuted.Difference <- runDirac(data.Cond1, data.Cond2,pathway.List, pathway.Accuracy)
-        
         more.Difference<-which(permuted.Difference >= pathway.Difference)
+        
         if (length(more.Difference) > 0)
         {
-            
-            calculated.Accuracy[more.Difference]<-(calculated.Accuracy[more.Difference] + 1)
-            
+            calculated.Accuracy[more.Difference]<-(calculated.Accuracy[more.Difference] + 1)   
         }
     }
     return(calculated.Accuracy)
@@ -228,20 +212,17 @@ doCrossValidation<-function(cond1.data,cond2.data,CV.pathwayList){
     index[1:ncol(cond1.data)] = "1"
     index[(ncol(cond1.data)+1):(ncol(cond1.data) + ncol(cond2.data))] = "0"
     
-    
     CVaccuracy[1:length(CV.pathwayList)] = 0
     rank.difference<-vector('numeric',length(CV.pathwayList))
     dirac.data<-cbind(cond1.data,cond2.data)
     
     for (samples in 1:ncol(dirac.data)){
         
-        print(samples)
         pathway.accuracy<-vector('numeric',length(CV.pathwayList))
         cvData<-dirac.data[,-samples]
         cvIndex<-index[-samples]
         holdData<-as.matrix(dirac.data[,samples])
         holdIndex<-index[samples]
-        
         rownames(holdData)<-rownames(dirac.data)
         
         data1<-which(cvIndex == "1")
@@ -256,8 +237,7 @@ doCrossValidation<-function(cond1.data,cond2.data,CV.pathwayList){
         
         for (pathwayN in 1:length(CV.pathwayList)){
             
-            namesDIR<-as.matrix(CV.pathwayList[[pathwayN]])
-            
+            namesDIR<-as.matrix(CV.pathwayList[[pathwayN]])    
             pathwayNdata.Cond1<-data.Cond1[which(rownames(data.Cond1) %in% namesDIR[,1]),]
             pathwayNdata.Cond2<-data.Cond2[which(rownames(data.Cond2) %in% namesDIR[,1]),]
             
@@ -268,16 +248,11 @@ doCrossValidation<-function(cond1.data,cond2.data,CV.pathwayList){
             holdDataGenes.order     = as.matrix(rank(holdDataGenes))
             
             pathCond.cols<-nrow(pathwayNDataCond1.order)
-            
-            
             gene.pairs <-(pathCond.cols*(pathCond.cols-1))/2
-            
-            
             
             cond1.matrix<-matrix(, nrow = gene.pairs)
             cond2.matrix<-matrix(, nrow = gene.pairs)
             hold.matrix<-matrix(, nrow = gene.pairs)
-            
             
             cond1.list<-doPairWise(pathwayNDataCond1.order,gene.pairs)
             cond2.list<-doPairWise(pathwayNDataCond2.order,gene.pairs)
